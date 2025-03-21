@@ -1,0 +1,29 @@
+{
+  "name": "auction-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for SuperRare auction notifications",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "supabase functions deploy",
+    "start:local": "supabase start && supabase functions serve"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "superrare",
+    "nft",
+    "auction",
+    "supabase"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "discord.js": "^14.14.1",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "supabase": "^1.115.4"
+  }
+}

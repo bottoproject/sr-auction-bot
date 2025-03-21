@@ -1,0 +1,59 @@
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+.env*.local
+
+# Supabase generated files with credentials
+scripts/setup-scheduler.sql
+scripts/test-send-discord-direct.sql
+supabase/config.toml
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Build outputs
+/build
+/dist
+/.next/
+/out/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage directory
+/coverage
+
+# Local development
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Secrets and keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+
+# Potential credentials files
+credentials.json
+*_credentials.json
+*-credentials.json
+*secrets*
+*apikey*
+
+# Supabase
+/supabase/.branches
+/supabase/.temp 

@@ -1,0 +1,19 @@
+{
+  "functions": [
+    {
+      "name": "fetch-events",
+      "schedule": "* * * * *",
+      "description": "Fetch auction events from SuperRare API every minute"
+    },
+    {
+      "name": "process-events",
+      "schedule": "* * * * *",
+      "description": "Process new events and format Discord messages every minute"
+    },
+    {
+      "name": "send-discord",
+      "schedule": "* * * * *",
+      "description": "Send formatted messages to Discord every minute"
+    }
+  ]
+} 

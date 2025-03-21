@@ -1,0 +1,51 @@
+-- Enable the http extension
+CREATE EXTENSION IF NOT EXISTS http;
+
+-- Create a temporary table for the response
+CREATE TEMP TABLE IF NOT EXISTS function_test_result (
+    test_time TIMESTAMP DEFAULT NOW(),
+    function_name TEXT,
+    status_code INT,
+    response_body TEXT
+);
+
+-- Test the send-discord function directly
+INSERT INTO function_test_result (function_name, status_code, response_body)
+SELECT 
+    'send-discord-direct-test',
+    response.status,
+    response.content
+FROM 
+    http(
+        ('POST',
+         'https://{{PROJECT_ID}}.supabase.co/functions/v1/send-discord',
+         ARRAY[
+            http_header('Authorization', 'Bearer {{SERVICE_ROLE_KEY}}'),
+            http_header('Content-Type', 'application/json')
+         ],
+         'application/json',
+         '{}'
+        )::http_request
+    ) as response;
+
+-- Display the test result
+SELECT * FROM function_test_result;
+
+-- Analyze the response
+SELECT 
+    function_name,
+    status_code,
+    CASE 
+        WHEN status_code >= 200 AND status_code < 300 THEN 'SUCCESS'
+        ELSE 'ERROR'
+    END AS result_status,
+    CASE
+        WHEN response_body::json->>'success' = 'true' THEN TRUE
+        ELSE FALSE
+    END AS function_success,
+    response_body::json->>'message' AS message,
+    response_body
+FROM function_test_result;
+
+-- Instructions
+-- IMPORTANT: Replace {{SERVICE_ROLE_KEY}} with your actual service role key and {{PROJECT_ID}} with your Supabase project ID before running this script. 

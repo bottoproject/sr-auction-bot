@@ -1,0 +1,156 @@
+-- Enable the pg_cron extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Enable the http extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS http;
+
+-- Create a table to log function calls and errors if it doesn't exist
+CREATE TABLE IF NOT EXISTS cron_function_logs (
+    log_id SERIAL PRIMARY KEY,
+    log_time TIMESTAMP DEFAULT NOW(),
+    function_name TEXT,
+    status_code INT,
+    response_body TEXT,
+    error_message TEXT
+);
+
+-- Drop existing jobs if they exist (for clean re-runs)
+DO $$
+DECLARE
+    job_exists BOOLEAN;
+BEGIN
+    -- Check if fetch-events-job exists
+    SELECT EXISTS (
+        SELECT 1 FROM cron.job WHERE jobname = 'fetch-events-job'
+    ) INTO job_exists;
+    
+    IF job_exists THEN
+        PERFORM cron.unschedule('fetch-events-job');
+        RAISE NOTICE 'Unscheduled existing fetch-events-job';
+    END IF;
+    
+    -- Check if process-events-job exists
+    SELECT EXISTS (
+        SELECT 1 FROM cron.job WHERE jobname = 'process-events-job'
+    ) INTO job_exists;
+    
+    IF job_exists THEN
+        PERFORM cron.unschedule('process-events-job');
+        RAISE NOTICE 'Unscheduled existing process-events-job';
+    END IF;
+    
+    -- Check if send-discord-job exists
+    SELECT EXISTS (
+        SELECT 1 FROM cron.job WHERE jobname = 'send-discord-job'
+    ) INTO job_exists;
+    
+    IF job_exists THEN
+        PERFORM cron.unschedule('send-discord-job');
+        RAISE NOTICE 'Unscheduled existing send-discord-job';
+    END IF;
+END $$;
+
+-- Create CRON job for fetch-events function
+SELECT cron.schedule(
+    'fetch-events-job',    -- job name
+    '* * * * *',           -- CRON schedule (every minute)
+    $$
+    -- Log job start
+    INSERT INTO cron_function_logs (function_name, status_code, response_body)
+    VALUES ('fetch-events-start', 0, 'Job started at ' || NOW()::text);
+    
+    -- Make HTTP request and log result
+    INSERT INTO cron_function_logs (function_name, status_code, response_body)
+    SELECT 
+        'fetch-events',
+        response.status,
+        substring(response.content::text, 1, 500)
+    FROM 
+        http(
+            ('POST',
+             'https://{{PROJECT_ID}}.supabase.co/functions/v1/fetch-events',
+             ARRAY[
+                http_header('Authorization', 'Bearer {{SERVICE_ROLE_KEY}}'),
+                http_header('Content-Type', 'application/json')
+             ],
+             'application/json',
+             '{}'
+            )::http_request
+        ) as response;
+    $$
+);
+
+-- Create CRON job for process-events function
+SELECT cron.schedule(
+    'process-events-job',    -- job name
+    '* * * * *',             -- CRON schedule (every minute)
+    $$
+    -- Log job start
+    INSERT INTO cron_function_logs (function_name, status_code, response_body)
+    VALUES ('process-events-start', 0, 'Job started at ' || NOW()::text);
+    
+    -- Make HTTP request and log result
+    INSERT INTO cron_function_logs (function_name, status_code, response_body)
+    SELECT 
+        'process-events',
+        response.status,
+        substring(response.content::text, 1, 500)
+    FROM 
+        http(
+            ('POST',
+             'https://{{PROJECT_ID}}.supabase.co/functions/v1/process-events',
+             ARRAY[
+                http_header('Authorization', 'Bearer {{SERVICE_ROLE_KEY}}'),
+                http_header('Content-Type', 'application/json')
+             ],
+             'application/json',
+             '{}'
+            )::http_request
+        ) as response;
+    $$
+);
+
+-- Create CRON job for send-discord function
+SELECT cron.schedule(
+    'send-discord-job',    -- job name
+    '* * * * *',           -- CRON schedule (every minute)
+    $$
+    -- Log job start
+    INSERT INTO cron_function_logs (function_name, status_code, response_body)
+    VALUES ('send-discord-start', 0, 'Job started at ' || NOW()::text);
+    
+    -- Make HTTP request and log result
+    INSERT INTO cron_function_logs (function_name, status_code, response_body)
+    SELECT 
+        'send-discord',
+        response.status,
+        substring(response.content::text, 1, 500)
+    FROM 
+        http(
+            ('POST',
+             'https://{{PROJECT_ID}}.supabase.co/functions/v1/send-discord',
+             ARRAY[
+                http_header('Authorization', 'Bearer {{SERVICE_ROLE_KEY}}'),
+                http_header('Content-Type', 'application/json')
+             ],
+             'application/json',
+             '{}'
+            )::http_request
+        ) as response;
+    $$
+);
+
+-- List all scheduled jobs to verify setup
+SELECT * FROM cron.job;
+
+-- Raise notice for successful setup
+DO $$
+BEGIN
+    RAISE NOTICE 'Successfully scheduled the following CRON jobs:';
+    RAISE NOTICE '1. fetch-events-job: Runs every minute to fetch new events from SuperRare API';
+    RAISE NOTICE '2. process-events-job: Runs every minute to process new events and format Discord messages';
+    RAISE NOTICE '3. send-discord-job: Runs every minute to send Discord messages for processed events';
+    RAISE NOTICE '';
+    RAISE NOTICE 'You can check job logs with: SELECT * FROM cron_function_logs ORDER BY log_time DESC LIMIT 20;';
+    RAISE NOTICE 'You can check job run history with: SELECT * FROM cron.job_run_details ORDER BY start_time DESC LIMIT 20;';
+END $$; 
