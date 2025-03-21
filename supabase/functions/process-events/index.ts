@@ -178,7 +178,7 @@ function formatDiscordMessage(event: any) {
   switch (event_type) {
     case 'START_AUCTION':
       return {
-        content: `<@&963045118015848519>\n\n**${artwork_title}** has an auction scheduled at ${formattedStartingTime} UTC on SuperRare:
+        content: `<@&841243883438080010>\n\n**${artwork_title}** has an auction scheduled at ${formattedStartingTime} UTC on SuperRare:
 
 [View the artwork on SuperRare](${artworkUrl}).
 
@@ -195,7 +195,7 @@ ${image_uri ? image_uri : ''}`,
 
     case 'MAKE_AUCTION_BID':
       return {
-        content: `<@&963045118015848519>\n\n**${artwork_title}** has a new bid:
+        content: `<@&841243883438080010>\n\n**${artwork_title}** has a new bid:
 
 **[${bidder_username}](https://superrare.com/${bidder_username})** placed a bid of ${formattedAmount} ${crypto_symbol}.
 
@@ -212,7 +212,7 @@ ${image_uri ? image_uri : ''}`,
 
     case 'END_AUCTION':
       return {
-        content: `<@&963045118015848519>\n\n**${artwork_title}** been collected by **[${bidder_username}](https://superrare.com/${bidder_username})** 
+        content: `<@&841243883438080010>\n\n**${artwork_title}** been collected by **[${bidder_username}](https://superrare.com/${bidder_username})** 
 
 **Auction Close Price**
 ${formattedAmount} ${crypto_symbol}.
@@ -229,7 +229,7 @@ ${image_uri ? image_uri : ''}`,
 
     default:
       return {
-        content: `<@&963045118015848519>\n\nNew event for artwork **${artwork_title}**. [View on SuperRare](${artworkUrl})`,
+        content: `<@&841243883438080010>\n\nNew event for artwork **${artwork_title}**. [View on SuperRare](${artworkUrl})`,
       };
   }
 }

@@ -385,7 +385,7 @@ function formatDiscordMessage(event: any) {
 
   // Return the message with embed and @verified mention
   return { 
-    content: "<@&963045118015848519>", // Add the verified role mention
+    content: "<@&841243883438080010>", // Add the verified role mention
     embeds: [embed]
   };
 } 
